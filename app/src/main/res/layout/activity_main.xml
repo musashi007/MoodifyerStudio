@@ -15,15 +15,15 @@
         android:paddingTop="@dimen/appbar_padding_top"
         android:theme="@style/AppTheme.AppBarOverlay">
 
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
-            app:layout_scrollFlags="scroll|enterAlways"
-            app:popupTheme="@style/AppTheme.PopupOverlay">
+        <!--<android.support.v7.widget.Toolbar-->
+        <!--android:id="@+id/toolbar"-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="?attr/actionBarSize"-->
+        <!--android:background="?attr/colorPrimary"-->
+        <!--app:layout_scrollFlags="scroll|enterAlways"-->
+        <!--app:popupTheme="@style/AppTheme.PopupOverlay">-->
 
-        </android.support.v7.widget.Toolbar>
+        <!--</android.support.v7.widget.Toolbar>-->
 
     </android.support.design.widget.AppBarLayout>
 
@@ -31,7 +31,6 @@
         android:id="@+id/container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-
         android:layout_gravity="center_vertical|center"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
@@ -40,19 +39,19 @@
         android:id="@+id/fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        app:backgroundTint="@color/colorAccent"
         android:layout_gravity="end|top"
         android:layout_margin="@dimen/fab_margin"
         android:src="@drawable/ic_action_list" />
-
 
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|center_horizontal"
-        android:orientation="vertical"
         android:clickable="true"
-        android:focusable="true">
+        android:focusable="true"
+        android:orientation="vertical">
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -64,63 +63,62 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:background="#90000000"
                 android:gravity="center"
-                android:textColor="@android:color/white"
+                android:layout_marginTop="30dp"
                 android:text="Songtitle"
-                android:textSize="46sp" />
+                android:textColor="@android:color/white"
+                android:textSize="20sp" />
 
             <TextView
                 android:id="@+id/song_artist_textview"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginTop="5dp"
-                android:gravity="center"
                 android:background="#90000000"
-                android:textColor="@android:color/white"
                 android:text="Artist"
-                android:textSize="17sp" />
+                android:textColor="@android:color/white"
+                android:textSize="15sp" />
         </RelativeLayout>
 
         <SeekBar
+            android:id="@+id/seekbar_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:id="@+id/seekbar_button"
             android:gravity="center_vertical|center"
-            android:paddingLeft="30dp"
-            android:max="10"/>
+            android:max="10"
+            android:paddingLeft="30dp" />
 
         <RelativeLayout
-            android:background="#55000000"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:background="#55000000">
 
             <TextView
                 android:id="@+id/start_time_textview"
                 android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_alignParentLeft="true"
                 android:gravity="center_horizontal|left"
                 android:text="00:00"
-                android:textColor="@android:color/white"
-                android:layout_height="wrap_content" />
+                android:textColor="@android:color/white" />
 
 
             <TextView
                 android:id="@+id/end_time_textview"
                 android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
-                android:textColor="@android:color/white"
                 android:gravity="center_horizontal|right"
                 android:text="00:00"
-                android:layout_height="wrap_content" />
+                android:textColor="@android:color/white" />
         </RelativeLayout>
 
 
         <LinearLayout
-            android:background="#55000000"
             android:layout_width="match_parent"
             android:layout_height="68dp"
             android:layout_gravity="bottom"
+            android:background="#55000000"
             android:orientation="horizontal">
 
             <RelativeLayout
@@ -172,5 +170,11 @@
             </RelativeLayout>
         </LinearLayout>
     </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/content_frame"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#fff" />
 
 </android.support.design.widget.CoordinatorLayout>

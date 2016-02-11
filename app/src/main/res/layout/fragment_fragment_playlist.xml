@@ -4,10 +4,12 @@
     android:layout_height="match_parent"
     tools:context="com.example.cbt_ones.moodifyer.fragment.FragmentPlaylist">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <ListView
+        android:id="@id/android:list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
-
+        android:layout_gravity="left|top"
+        android:divider="@null"
+        android:dividerHeight="0dp" />
+-
 </FrameLayout>

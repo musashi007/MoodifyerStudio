@@ -10,9 +10,9 @@
         <!--android:textColor="#fff"-->
         <!--android:layout_height="wrap_content" />-->
     <ImageView
+        android:id="@+id/cover_photo"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:src="@drawable/shuffled"
+        android:layout_height="match_parent"
         android:layout_gravity="top|center_horizontal"
         android:layout_marginBottom ="149dp"
         android:layout_alignParentBottom="true"

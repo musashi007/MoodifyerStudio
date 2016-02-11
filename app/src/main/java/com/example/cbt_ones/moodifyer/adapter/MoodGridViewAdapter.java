@@ -108,7 +108,7 @@ public class MoodGridViewAdapter extends BaseAdapter {
 
         Item item = getItem(i);
 
-        picture.setImageBitmap(decodeSampledBitmapFromResource(context.getResources(), item.drawableId, 200, 200));
+        picture.setImageBitmap(decodeSampledBitmapFromResource(context.getResources(), item.drawableId, 150, 150));
         name.setText(item.name);
 
         return v;
