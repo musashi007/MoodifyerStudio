@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.cbt_ones.moodifyer" >
+    package="com.example.cbt_ones.moodifyer">
 
-    <uses-permission
-        android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
         android:allowBackup="true"
-        android:largeHeap="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:largeHeap="true"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme" >
+        android:theme="@style/AppTheme">
         <activity
             android:name=".ScrollingActivity"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar" >
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -25,8 +25,21 @@
         <activity
             android:name=".MainActivity"
             android:label="@string/title_activity_main"
-            android:theme="@style/AppTheme.NoActionBar" >
-        </activity>
+            android:theme="@style/AppTheme.NoActionBar"></activity>
+
+        <service
+            android:name=".services.StreamSongService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.example.cbt_ones.moodifyer.services.action.PLAY" />
+                <action android:name="com.example.cbt_ones.moodifyer.services.action.PAUSE" />
+                <action android:name="com.example.cbt_ones.moodifyer.services.action.PLAYPAUSE" />
+                <action android:name="com.example.cbt_ones.moodifyer.services.action.PLAYPAUSEBROWSE" />
+                <action android:name="com.example.cbt_ones.moodifyer.services.action.MOODLIST" />
+                <action android:name="com.example.cbt_ones.moodifyer.services.action.LOGOUTSTOP" />
+            </intent-filter>
+        </service>
+
     </application>
 
 </manifest>

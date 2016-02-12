@@ -4,6 +4,7 @@ package com.example.cbt_ones.moodifyer;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -34,6 +35,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.cbt_ones.moodifyer.pojo.Track;
+import com.example.cbt_ones.moodifyer.services.StreamSongService;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -59,12 +61,13 @@ public class MainActivity extends AppCompatActivity {
     public static PagerAdapter mPagerAdapter;
     private String value;
     private ViewGroup viewGroup;
-    public Button playbtn, pausebtn, nextbtn, previousbtn;
+    public static Button playbtn, pausebtn, nextbtn, previousbtn;
     public static TextView song_artist_textview, song_title_textview, song_start_time, song_end_time;
     public static ArrayList<Track> tracklist;
     public static FloatingActionButton fab;
     public int global_song_position = 0;
     private SongsManager track = new SongsManager();
+    public static Context context;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -129,6 +132,12 @@ Set up the ViewPager with the sections adapter.
             public void onClick(View v) {
                 playbtn.setVisibility(View.GONE);
                 pausebtn.setVisibility(View.VISIBLE);
+//                startService(new Intent(StreamSongService.ACTION_PLAYPAUSE).putExtra("value_song_path", tracklist.get(0).getSong_path_data()));
+                context = getApplicationContext();
+                Intent intent = new Intent(getApplicationContext(), StreamSongService.class);
+                intent.setAction(StreamSongService.ACTION_PLAYPAUSE);
+                intent.putExtra("value_song_path", tracklist.get(0).getSong_path_data());
+                startService(intent);
             }
         });
         pausebtn.setOnClickListener(new View.OnClickListener() {
@@ -136,6 +145,11 @@ Set up the ViewPager with the sections adapter.
             public void onClick(View v) {
                 playbtn.setVisibility(View.VISIBLE);
                 pausebtn.setVisibility(View.GONE);
+//                startService(new Intent(StreamSongService.ACTION_PAUSE));
+                context = getApplicationContext();
+                Intent intent = new Intent(getApplicationContext(), StreamSongService.class);
+                intent.setAction(StreamSongService.ACTION_PAUSE);
+                startService(intent);
             }
         });
         nextbtn.setOnClickListener(new View.OnClickListener() {
@@ -307,7 +321,7 @@ Set up the ViewPager with the sections adapter.
                 }
 
                 @Override
-                public void onPageSelected(int position) {
+                public void onPageSelected(final int position) {
                     song_artist_textview.setText(tracklist.get(position).getSong_artist());
                     song_title_textview.setText(tracklist.get(position).getSong_title());
                     song_end_time.setText(String.valueOf(tracklist.get(position).getSong_duration()));
@@ -318,7 +332,6 @@ Set up the ViewPager with the sections adapter.
                     } catch (NullPointerException e) {
                         e.printStackTrace();
                     }
-
 
                 }
 
