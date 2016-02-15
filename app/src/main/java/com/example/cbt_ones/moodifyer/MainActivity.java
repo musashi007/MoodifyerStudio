@@ -12,6 +12,7 @@ import android.graphics.Shader;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -31,6 +32,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -68,6 +70,11 @@ public class MainActivity extends AppCompatActivity {
     public int global_song_position = 0;
     private SongsManager track = new SongsManager();
     public static Context context;
+    private static String initial_image_path;
+    private static int current_song_position;
+    public static SeekBar seekbar;
+    private final static Handler handler = new Handler();
+    private static int mediaFileLengthInMilliseconds;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -82,7 +89,7 @@ primary sections of the activity.
 mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
 Set up the ViewPager with the sections adapter.
 */
-
+        seekbar = (SeekBar) findViewById(R.id.seekbar_button);
         playbtn = (Button) findViewById(R.id.play);
         pausebtn = (Button) findViewById(R.id.pause);
         nextbtn = (Button) findViewById(R.id.next);
@@ -126,32 +133,65 @@ Set up the ViewPager with the sections adapter.
             }
         });
 
+
+
         pausebtn.setVisibility(View.GONE);
+        mViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+//                Toast.makeText(getApplicationContext(), String.valueOf(position), Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onPageSelected(final int position) {
+                song_artist_textview.setText(tracklist.get(position).getSong_artist());
+                song_title_textview.setText(tracklist.get(position).getSong_title());
+                song_end_time.setText(String.valueOf(tracklist.get(position).getSong_duration()));
+                try {
+                    String path = get_album_art(tracklist.get(position).getSong_id());
+                    PlaceholderFragment.coverPhoto.setImageBitmap(BitmapFactory.decodeFile(""));
+                    PlaceholderFragment.coverPhoto.setImageBitmap(BitmapFactory.decodeFile(path));
+                    current_song_position = position;
+                    Intent intent = new Intent(getApplicationContext(), StreamSongService.class);
+                    intent.setAction(StreamSongService.ACTION_PLAYPAUSE);
+                    intent.putExtra("value_song_path", tracklist.get(current_song_position).getSong_path_data());
+                    getApplicationContext().startService(intent);
+//                    primarySeekBarProgressUpdater();
+                } catch (NullPointerException e) {
+                    e.printStackTrace();
+                }
+
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+
         playbtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                playbtn.setVisibility(View.GONE);
-                pausebtn.setVisibility(View.VISIBLE);
-//                startService(new Intent(StreamSongService.ACTION_PLAYPAUSE).putExtra("value_song_path", tracklist.get(0).getSong_path_data()));
-                context = getApplicationContext();
+//                playbtn.setVisibility(View.GONE);
+//                pausebtn.setVisibility(View.VISIBLE);
                 Intent intent = new Intent(getApplicationContext(), StreamSongService.class);
-                intent.setAction(StreamSongService.ACTION_PLAYPAUSE);
-                intent.putExtra("value_song_path", tracklist.get(0).getSong_path_data());
-                startService(intent);
+                intent.setAction(StreamSongService.ACTION_PLAY);
+//                intent.putExtra("value_song_path", tracklist.get(current_song_position).getSong_path_data());
+                getApplicationContext().startService(intent);
             }
         });
+
         pausebtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                playbtn.setVisibility(View.VISIBLE);
-                pausebtn.setVisibility(View.GONE);
-//                startService(new Intent(StreamSongService.ACTION_PAUSE));
-                context = getApplicationContext();
+//                playbtn.setVisibility(View.VISIBLE);
+//                pausebtn.setVisibility(View.GONE);
                 Intent intent = new Intent(getApplicationContext(), StreamSongService.class);
                 intent.setAction(StreamSongService.ACTION_PAUSE);
-                startService(intent);
+                getApplicationContext().startService(intent);
             }
         });
+
         nextbtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -172,6 +212,51 @@ Set up the ViewPager with the sections adapter.
 
     }
 
+    public static void primarySeekBarProgressUpdater() {
+        seekbar.setProgress((int) (((float) StreamSongService.mediaPlayer.getCurrentPosition() / mediaFileLengthInMilliseconds) * 100)); // This
+        // //"was playing"/"song length"
+        if (StreamSongService.mediaPlayer.isPlaying()) {
+            showDuration(StreamSongService.mediaPlayer.getCurrentPosition());
+            Runnable notification = new Runnable() {
+                public void run() {
+                    primarySeekBarProgressUpdater();
+                }
+            };
+            handler.postDelayed(notification, 1000);
+        }
+    }
+
+    public static void showDuration(long milliseconds) {
+        StringBuffer buf = new StringBuffer();
+        int minutes = (int) ((milliseconds % (1000 * 60 * 60)) / (1000 * 60));
+        int seconds = (int) (((milliseconds % (1000 * 60 * 60)) % (1000 * 60)) / 1000);
+
+        buf.append(String.format("%02d", minutes)).append(":")
+                .append(String.format("%02d", seconds));
+        song_start_time.setText(buf.toString());
+    }
+
+    public String get_album_art(int song_id) {
+        Uri album_art = MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI;
+        Cursor cursor_image;
+        String path = "";
+
+        if (song_id > -1) {
+            cursor_image = getApplicationContext().getContentResolver().query(album_art, new String[]{MediaStore.Audio.Albums._ID, MediaStore.Audio.Albums.ALBUM_ART},
+                    MediaStore.Audio.Albums._ID + " = ?",
+                    new String[]{String.valueOf(song_id)},
+                    null);
+            if (cursor_image != null) {
+                if (cursor_image.moveToFirst()) {
+                    path = cursor_image.getString(cursor_image.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART));
+                    // do whatever you need to do
+                }
+                cursor_image.close();
+            }
+        }
+        return path;
+    }
+
     private class loadSongsFromLocal extends AsyncTask<String, Void, String> {
 
         @Override
@@ -186,13 +271,22 @@ Set up the ViewPager with the sections adapter.
         }
 
         protected void onPostExecute(String result) {
-            tracklist = track.get_songs_from_sdcard(getApplicationContext());
-            mPagerAdapter = new SectionsPagerAdapter(getApplicationContext(), getSupportFragmentManager(), tracklist);
-            mViewPager.setAdapter(mPagerAdapter);
+            try {
+                tracklist = track.get_songs_from_sdcard(getApplicationContext());
+                mPagerAdapter = new SectionsPagerAdapter(getApplicationContext(), getSupportFragmentManager(), tracklist);
+                mViewPager.setAdapter(mPagerAdapter);
+
+            } catch (IllegalStateException e) {
+                e.printStackTrace();
+            } catch (NullPointerException e) {
+                e.printStackTrace();
+            }
 
             song_artist_textview.setText(tracklist.get(0).getSong_artist());
             song_title_textview.setText(tracklist.get(0).getSong_title());
             song_end_time.setText(String.valueOf(tracklist.get(0).getSong_duration()));
+            initial_image_path = get_album_art(tracklist.get(0).getSong_id());
+            PlaceholderFragment.coverPhoto.setImageBitmap(BitmapFactory.decodeFile(initial_image_path));
         }
 
     }
@@ -312,58 +406,11 @@ Set up the ViewPager with the sections adapter.
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
             coverPhoto = (ImageView) rootView.findViewById(R.id.cover_photo);
-            String path = get_album_art(tracklist.get(0).getSong_id());
-            coverPhoto.setImageBitmap(BitmapFactory.decodeFile(path));
-            MainActivity.mViewPager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-                @Override
-                public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
-                }
-
-                @Override
-                public void onPageSelected(final int position) {
-                    song_artist_textview.setText(tracklist.get(position).getSong_artist());
-                    song_title_textview.setText(tracklist.get(position).getSong_title());
-                    song_end_time.setText(String.valueOf(tracklist.get(position).getSong_duration()));
-                    try {
-                        String path = get_album_art(tracklist.get(position).getSong_id());
-                        coverPhoto.setImageBitmap(BitmapFactory.decodeFile(""));
-                        coverPhoto.setImageBitmap(BitmapFactory.decodeFile(path));
-                    } catch (NullPointerException e) {
-                        e.printStackTrace();
-                    }
-
-                }
-
-                @Override
-                public void onPageScrollStateChanged(int state) {
-
-                }
-            });
-
+//            coverPhoto.setImageBitmap(BitmapFactory.decodeFile(initial_image_path));
 
             return rootView;
         }
 
-        public String get_album_art(int song_id) {
-            Uri album_art = MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI;
-            Cursor cursor_image;
-            String path = "";
 
-            if (song_id > -1) {
-                cursor_image = getActivity().getContentResolver().query(album_art, new String[]{MediaStore.Audio.Albums._ID, MediaStore.Audio.Albums.ALBUM_ART},
-                        MediaStore.Audio.Albums._ID + " = ?",
-                        new String[]{String.valueOf(song_id)},
-                        null);
-                if (cursor_image != null) {
-                    if (cursor_image.moveToFirst()) {
-                        path = cursor_image.getString(cursor_image.getColumnIndex(MediaStore.Audio.Albums.ALBUM_ART));
-                        // do whatever you need to do
-                    }
-                    cursor_image.close();
-                }
-            }
-            return path;
-        }
     }
 }
